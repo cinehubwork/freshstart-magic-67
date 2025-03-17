@@ -1,12 +1,11 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import SearchBar from '@/components/SearchBar';
 import FilterDropdown from '@/components/FilterDropdown';
 import CoffeeShopCard from '@/components/CoffeeShopCard';
 import Navigation from '@/components/Navigation';
-import { Button } from '@/components/ui/button';
 import { coffeeShops, coffeeShopLocations, coffeeShopStyles } from '@/data/coffeeShops';
 
 const ITEMS_PER_PAGE = 4; // Number of items to show per page
@@ -22,6 +21,9 @@ const CoffeeShops = () => {
   const [filteredShops, setFilteredShops] = useState(coffeeShops);
   const [isLoading, setIsLoading] = useState(true);
   const [visibleItems, setVisibleItems] = useState(ITEMS_PER_PAGE);
+  const [hasMore, setHasMore] = useState(true);
+  const observer = useRef<IntersectionObserver | null>(null);
+  const loadingRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Simulate loading data
@@ -66,6 +68,18 @@ const CoffeeShops = () => {
     setFilteredShops(shops);
     // Reset visible items count when filters change
     setVisibleItems(ITEMS_PER_PAGE);
+    setHasMore(shops.length > ITEMS_PER_PAGE);
+  };
+
+  const loadMoreItems = () => {
+    if (visibleItems >= filteredShops.length) {
+      setHasMore(false);
+      return;
+    }
+    
+    const nextVisibleItems = visibleItems + ITEMS_PER_PAGE;
+    setVisibleItems(nextVisibleItems);
+    setHasMore(nextVisibleItems < filteredShops.length);
   };
 
   const handleSearch = (query: string) => {
@@ -93,13 +107,22 @@ const CoffeeShops = () => {
     navigate(-1);
   };
 
-  const handleLoadMore = () => {
-    setVisibleItems(prev => prev + ITEMS_PER_PAGE);
-  };
-
   // Get the subset of shops to display based on the current page
   const shopsToDisplay = filteredShops.slice(0, visibleItems);
-  const hasMoreItems = visibleItems < filteredShops.length;
+
+  // Setup intersection observer for infinite scrolling
+  const lastShopElementRef = useCallback((node: HTMLDivElement | null) => {
+    if (isLoading) return;
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMoreItems();
+      }
+    }, { threshold: 0.5 });
+    
+    if (node) observer.current.observe(node);
+  }, [isLoading, hasMore]);
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -149,24 +172,35 @@ const CoffeeShops = () => {
           ) : filteredShops.length > 0 ? (
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {shopsToDisplay.map((shop, index) => (
-                  <CoffeeShopCard 
-                    key={shop.id} 
-                    shop={shop} 
-                    delay={300 + index * 100}
-                  />
-                ))}
+                {shopsToDisplay.map((shop, index) => {
+                  if (index === shopsToDisplay.length - 1 && hasMore) {
+                    return (
+                      <div ref={lastShopElementRef} key={shop.id}>
+                        <CoffeeShopCard 
+                          shop={shop} 
+                          delay={300 + (index % ITEMS_PER_PAGE) * 100}
+                        />
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <CoffeeShopCard 
+                        key={shop.id} 
+                        shop={shop} 
+                        delay={300 + (index % ITEMS_PER_PAGE) * 100}
+                      />
+                    );
+                  }
+                })}
               </div>
               
-              {hasMoreItems && (
-                <div className="flex justify-center mt-8">
-                  <Button 
-                    onClick={handleLoadMore}
-                    variant="outline"
-                    className="px-8 border-coffee-300 text-coffee-800 hover:bg-coffee-50"
-                  >
-                    Load More
-                  </Button>
+              {hasMore && (
+                <div ref={loadingRef} className="flex justify-center py-4">
+                  <div className="animate-pulse flex space-x-2">
+                    <div className="w-2 h-2 bg-coffee-300 rounded-full"></div>
+                    <div className="w-2 h-2 bg-coffee-300 rounded-full"></div>
+                    <div className="w-2 h-2 bg-coffee-300 rounded-full"></div>
+                  </div>
                 </div>
               )}
             </div>

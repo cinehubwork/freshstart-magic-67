@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SearchBar from '@/components/SearchBar';
 import FilterDropdown from '@/components/FilterDropdown';
@@ -7,22 +7,42 @@ import CoffeeShopCard, { CoffeeShop } from '@/components/CoffeeShopCard';
 import Navigation from '@/components/Navigation';
 import { coffeeShops, coffeeShopLocations, coffeeShopStyles } from '@/data/coffeeShops';
 
+const ITEMS_PER_PAGE = 4; // Number of items to show per page
+
 const Index = () => {
   const navigate = useNavigate();
   const [location, setLocation] = useState('all');
   const [style, setStyle] = useState('all');
   const [visibleShops, setVisibleShops] = useState<CoffeeShop[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const observer = useRef<IntersectionObserver | null>(null);
+  const loadingRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Simulate loading data
     const timer = setTimeout(() => {
-      setVisibleShops(coffeeShops.slice(0, 3));
+      loadMoreShops(true);
       setIsLoading(false);
     }, 500);
 
     return () => clearTimeout(timer);
   }, []);
+
+  const loadMoreShops = (reset = false) => {
+    const startIndex = reset ? 0 : visibleShops.length;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const newShops = coffeeShops.slice(startIndex, endIndex);
+    
+    if (newShops.length === 0) {
+      setHasMore(false);
+      return;
+    }
+    
+    setVisibleShops(prev => reset ? newShops : [...prev, ...newShops]);
+    setPage(reset ? 1 : page + 1);
+  };
 
   const handleSearch = (query: string) => {
     navigate('/coffee', { state: { query, location, style } });
@@ -36,6 +56,20 @@ const Index = () => {
     setStyle(value);
   };
 
+  // Setup intersection observer for infinite scrolling
+  const lastShopElementRef = useCallback((node: HTMLDivElement | null) => {
+    if (isLoading) return;
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMoreShops();
+      }
+    }, { threshold: 0.5 });
+    
+    if (node) observer.current.observe(node);
+  }, [isLoading, hasMore]);
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="max-w-4xl mx-auto px-4 pt-8 pb-16">
@@ -44,7 +78,7 @@ const Index = () => {
           <p className="text-muted-foreground text-lg mb-8">Find the perfect spot for your next date</p>
         </div>
 
-        <div className="space-y-4 opacity-0 animate-fade-up" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
+        <div className="space-y-4 opacity-0 animate-fade-up" style={{ animationDelay: '200ms', animationFillMode: 'forwards', position: 'relative', zIndex: 10 }}>
           <SearchBar 
             onSearch={handleSearch} 
             autoFocus={false}
@@ -88,15 +122,38 @@ const Index = () => {
                 />
               ))
             ) : (
-              visibleShops.map((shop, index) => (
-                <CoffeeShopCard 
-                  key={shop.id} 
-                  shop={shop} 
-                  delay={400 + index * 100}
-                />
-              ))
+              visibleShops.map((shop, index) => {
+                if (index === visibleShops.length - 1) {
+                  return (
+                    <div ref={lastShopElementRef} key={shop.id}>
+                      <CoffeeShopCard 
+                        shop={shop} 
+                        delay={400 + (index % ITEMS_PER_PAGE) * 100}
+                      />
+                    </div>
+                  );
+                } else {
+                  return (
+                    <CoffeeShopCard 
+                      key={shop.id} 
+                      shop={shop} 
+                      delay={400 + (index % ITEMS_PER_PAGE) * 100}
+                    />
+                  );
+                }
+              })
             )}
           </div>
+          
+          {hasMore && !isLoading && (
+            <div ref={loadingRef} className="flex justify-center py-8">
+              <div className="animate-pulse flex space-x-2">
+                <div className="w-2 h-2 bg-coffee-300 rounded-full"></div>
+                <div className="w-2 h-2 bg-coffee-300 rounded-full"></div>
+                <div className="w-2 h-2 bg-coffee-300 rounded-full"></div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

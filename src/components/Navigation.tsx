@@ -14,23 +14,23 @@ const Navigation = () => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-gray-200 bg-white/95 backdrop-blur-md shadow-sm px-4 pb-4 pt-2">
+    <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-gray-200 bg-white/95 backdrop-blur-md shadow-sm px-4 pb-2 pt-1">
       <div className="flex items-center justify-around max-w-md mx-auto">
         <NavItem 
           to="/coffee" 
-          icon={<Coffee size={22} />} 
+          icon={<Coffee size={20} />} 
           label="Coffee" 
           isActive={isActive('/coffee')} 
         />
         <NavItem 
           to="/restaurants" 
-          icon={<UtensilsCrossed size={22} />} 
+          icon={<UtensilsCrossed size={20} />} 
           label="Restaurants" 
           isActive={isActive('/restaurants')} 
         />
         <NavItem 
           to="/favorites" 
-          icon={<Heart size={22} />} 
+          icon={<Heart size={20} />} 
           label="Favorites" 
           isActive={isActive('/favorites')} 
         />
@@ -51,7 +51,7 @@ const NavItem = ({ to, icon, label, isActive }: NavItemProps) => {
     <Link
       to={to}
       className={cn(
-        'flex flex-col items-center justify-center px-4 py-2 rounded-lg',
+        'flex flex-col items-center justify-center px-4 py-1 rounded-lg',
         'transition-all duration-200',
         isActive 
           ? 'text-coffee-700' 
@@ -68,7 +68,7 @@ const NavItem = ({ to, icon, label, isActive }: NavItemProps) => {
       </div>
       <span 
         className={cn(
-          'text-xs mt-1 font-medium',
+          'text-xs mt-0.5 font-medium',
           isActive && 'font-semibold'
         )}
       >
