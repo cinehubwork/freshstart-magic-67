@@ -14,7 +14,7 @@ const Navigation = () => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-gray-200 bg-white/95 backdrop-blur-md shadow-sm px-4 pb-2 pt-1">
+    <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-gray-200 bg-white/95 backdrop-blur-md shadow-sm px-4 py-1.5">
       <div className="flex items-center justify-around max-w-md mx-auto">
         <NavItem 
           to="/coffee" 
@@ -51,7 +51,7 @@ const NavItem = ({ to, icon, label, isActive }: NavItemProps) => {
     <Link
       to={to}
       className={cn(
-        'flex flex-col items-center justify-center px-4 py-1 rounded-lg',
+        'flex flex-col items-center justify-center px-4 py-0.5 rounded-lg',
         'transition-all duration-200',
         isActive 
           ? 'text-coffee-700' 
