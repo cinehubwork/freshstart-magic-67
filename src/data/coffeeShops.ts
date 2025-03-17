@@ -14,6 +14,8 @@ export interface CoffeeShop {
   phone?: string;
   website?: string;
   instagram?: string;
+  facebook?: string;
+  wifi?: boolean;
   menu?: {
     category: string;
     items: {
@@ -35,7 +37,9 @@ export const coffeeShops: CoffeeShop[] = [
     hours: '07:30 - 21:00',
     styles: ['Rustic', 'Vintage'],
     description: 'A.M Phin & Pour offers a unique Vietnamese coffee experience with both traditional and modern brewing methods. The rustic, industrial design creates a peaceful atmosphere away from the busy city.',
-    phone: '+84 90 123 4567',
+    phone: '+84 377 044 202',
+    facebook: 'amphincoffee',
+    wifi: true,
     menu: [
       {
         category: 'Specialty Coffee',

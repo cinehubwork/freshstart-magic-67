@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { MapPin, Clock } from 'lucide-react';
+import { MapPin, Clock, Wifi } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import RatingBadge from './RatingBadge';
@@ -15,6 +15,7 @@ export interface CoffeeShop {
   city: string;
   hours: string;
   styles: string[];
+  wifi?: boolean;
 }
 
 interface CoffeeShopCardProps {
@@ -109,6 +110,12 @@ const CoffeeShopCard = ({
           {shop.styles.map((style) => (
             <StyleTag key={style} label={style} size="sm" />
           ))}
+          {shop.wifi && (
+            <div className="flex items-center px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 text-xs">
+              <Wifi size={12} className="mr-1" />
+              Free Wi-Fi
+            </div>
+          )}
         </div>
       </div>
     </Link>
