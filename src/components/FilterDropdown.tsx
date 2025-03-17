@@ -62,6 +62,7 @@ const FilterDropdown = ({
         'relative w-full',
         className
       )}
+      style={{ zIndex: isOpen ? 50 : 'auto' }} // Add higher z-index when dropdown is open
     >
       <button
         type="button"
@@ -87,7 +88,7 @@ const FilterDropdown = ({
       {isOpen && (
         <div 
           className={cn(
-            'absolute z-20 w-full mt-1 rounded-lg overflow-hidden',
+            'absolute z-50 w-full mt-1 rounded-lg overflow-hidden', // Update z-index to 50
             'bg-white/95 backdrop-blur-md shadow-lg',
             'border border-gray-200 animate-scale-in',
             'origin-top max-h-60 overflow-y-auto'
